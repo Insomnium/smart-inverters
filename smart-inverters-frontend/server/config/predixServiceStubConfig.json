@@ -63,6 +63,40 @@
         "volume_mounts": []
       }
     ],
+    "predix-analytics-proxy": [
+      {
+        "credentials": {
+          "ingest": {
+            "uri": "wss://gateway-predix-data-services.run.aws-usw02-pr.ice.predix.io/v1/stream/messages",
+            "zone-http-header-name": "Predix-Zone-Id",
+            "zone-http-header-value": "8046ff11-9879-46a9-bea5-32e22caae269",
+            "zone-token-scopes": [
+              "timeseries.zones.8046ff11-9879-46a9-bea5-32e22caae269.user",
+              "timeseries.zones.8046ff11-9879-46a9-bea5-32e22caae269.ingest"
+            ]
+          },
+          "query": {
+            "uri": "https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints",
+            "zone-http-header-name": "Predix-Zone-Id",
+            "zone-http-header-value": "8046ff11-9879-46a9-bea5-32e22caae269",
+            "zone-token-scopes": [
+              "timeseries.zones.8046ff11-9879-46a9-bea5-32e22caae269.user",
+              "timeseries.zones.8046ff11-9879-46a9-bea5-32e22caae269.query"
+            ]
+          }
+        },
+        "label": "predix-timeseries",
+        "name": "smart-inverter-timeseries",
+        "plan": "Free",
+        "provider": null,
+        "syslog_drain_url": null,
+        "tags": [
+          "timeseries",
+          "time-series",
+          "time series"
+        ],
+        "volume_mounts": []      }
+    ],
     "user-provided": [
       {
         "credentials": {
