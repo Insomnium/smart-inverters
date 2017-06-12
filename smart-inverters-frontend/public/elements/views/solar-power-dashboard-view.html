@@ -20,19 +20,16 @@
 
     <style include="operator-dashboard-view-styles"></style>
 
-    <div class="flex--row flex flex--center u-m--">
-      <h2> Solar Power dashboard </h2>
-    </div>
 
     <div class="layout u-mt--" style="height: 85vh;">
       <div class="layout__item u-1/2">
 
-        <google-map latitude="44.4310916" longitude="26.0233373" zoom="15" min-zoom="12" max-zoom="22" language="en"
+        <google-map latitude="21.2837961" longitude="-157.7162719" zoom="15" min-zoom="12" max-zoom="22" language="en"
                     api-key="AIzaSyB-uDb0wvtXzNncAWGsDrU2m_y-B01y5FA">
 
           <template is="dom-repeat" items="{{_paths}}" as="path">
             <google-map-poly stroke-color="[[path.color]]"
-                             stroke-weight="4">
+                             stroke-weight="2">
               <template is="dom-repeat" items="{{path.coords}}" as="point">
                 <google-map-point latitude="[[point.lat]]" longitude="[[point.lng]]"></google-map-point>
               </template>
