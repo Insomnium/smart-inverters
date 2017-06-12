@@ -16,20 +16,22 @@ public class OptimalRoiForSolarSystem {
 
     public String calculate(String json) throws IOException {
         Map<String, Object> map = mapper.readValue(json, HashMap.class);
-        Map<String, Number> generatedPower = (Map<String, Number>) map.get("generatedPower");
-        Number batCapacity = (Number) map.get("batteryCapacity");
-        Map<String, Number> powerDemand = (Map<String, Number>) map.get("powerDemand");
-		Map<String, Number> price = (Map<String, Number>) map.get("price");
-
-        Output result = calculateBasic(new GeneratedPower(generatedPower), new PowerDemand(powerDemand), new Price(price), batCapacity.doubleValue());
-        return mapper.writeValueAsString(result);
-    }
-	
-	   public Output calculateBasic(GeneratedPower generated, PowerDemand powerDemand, Price price, Double batteryCapacity) {
-
+        
+        Map<String, Number> _generatedPower = (Map<String, Number>) map.get("generatedPower");
+        GeneratedPower generated = new GeneratedPower(_generatedPower);
        
-        Output output = new Output();
-		double batteryEnergy = 0.0;
+        Number batteryCapacity = (Number) map.get("batteryCapacity");
+        
+        Map<String, Number> _powerDemand = (Map<String, Number>) map.get("powerDemand");
+        PowerDemand powerDemand = new PowerDemand(_powerDemand);
+        
+		Map<String, Number> _price = (Map<String, Number>) map.get("price");
+		Price price = new Price(_price);
+
+        Output output = new Output(); 
+        
+        //dumb version
+        double batteryEnergy = 0.0;
         for (Map.Entry<Long, Double> entry : powerDemand.entrySet()) 
         {
         	
@@ -46,41 +48,26 @@ public class OptimalRoiForSolarSystem {
 
             if (batteryEnergy + generatedPwr >= pwrDemand) 
             {
-            	output.PVConsumption.put(hour, pwrDemand);
+            	output.PVConsumptionDumb.put(hour, pwrDemand);
                 batteryEnergy += generatedPwr - pwrDemand;
             } else {
                 batteryEnergy += generatedPwr;
-                output.PVConsumption.put(hour, 0.0);
+                output.PVConsumptionDumb.put(hour, 0.0);
             }
             
-            output.priceWithPV+=(pwrDemand-output.PVConsumption.get(hour))*hourNetworkPrice;
+            output.priceWithPVDumb+=(pwrDemand-output.PVConsumptionDumb.get(hour))*hourNetworkPrice;
 
-            batteryEnergy = Math.min(batteryEnergy, batteryCapacity);
+            batteryEnergy = Math.min(batteryEnergy, batteryCapacity.doubleValue());
         }
-
-        return output;
-	}
-	
-	public String calculateSmart(String json) throws IOException {
-        Map<String, Object> map = mapper.readValue(json, HashMap.class);
-        Map<String, Number> generatedPower = (Map<String, Number>) map.get("generatedPower");
-        Number batCapacity = (Number) map.get("batteryCapacity");
-        Map<String, Number> powerDemand = (Map<String, Number>) map.get("powerDemand");
-		Map<String, Number> price = (Map<String, Number>) map.get("price");
-
-        Output result = calculateInternal(new GeneratedPower(generatedPower), new PowerDemand(powerDemand), new Price(price), batCapacity.doubleValue());
-        return mapper.writeValueAsString(result);
-    }
-	
-	public static Output calculateInternal(Map<Long, Double> generated, Map<Long, Double> powerDemand, Map<Long, Double> networkPrice, Double batteryCapacity) 
-	{
-		Output output = new Output();
-		
-		double fullNetworkPrice = 0.0;
+        //end dumb version
+        
+        
+        //smart version 
+        double fullNetworkPrice = 0.0;
 		double optimizedNetworkPrice =0.0;
 		double staringDayBattery = 0; 
 		
-		double batteryEnergy = staringDayBattery;
+		batteryEnergy = staringDayBattery;
 		
 		//let's test all possible combinations
 		int producingHours = 0 ;
@@ -139,36 +126,36 @@ public class OptimalRoiForSolarSystem {
 		
 			String[] comboV = binary.split("");
 			
-			double price = 0;
+			double thisPrice = 0;
 			for (Map.Entry<Long, Double> entry : powerDemand.entrySet()) 
 			{
 				Long hour = entry.getKey();
 				Double pwrDemand = entry.getValue();
 	            Double generatedPwr = generated.get(hour);
-	            Double hourNetworkPrice = networkPrice.get(hour);
+	            Double hourNetworkPrice = price.get(hour);
 	            
 				if (comboV[currentCounter].equals("0"))
 				{
-					batteryEnergy=Math.min(batteryEnergy+generatedPwr,batteryCapacity);
-					price = price + pwrDemand*hourNetworkPrice;
+					batteryEnergy=Math.min(batteryEnergy+generatedPwr,batteryCapacity.doubleValue());
+					thisPrice = thisPrice + pwrDemand*hourNetworkPrice;
 				}
 				else 
 				{
 					if (generatedPwr+batteryEnergy>=pwrDemand)
 					{
-						batteryEnergy=Math.min(batteryEnergy+generatedPwr-pwrDemand,batteryCapacity);
+						batteryEnergy=Math.min(batteryEnergy+generatedPwr-pwrDemand,batteryCapacity.doubleValue());
 					}
 					else
 					{	pwrDemand=pwrDemand-batteryEnergy-generatedPwr;
 						batteryEnergy=0.0;
-						price = price + pwrDemand*hourNetworkPrice;
+						thisPrice = thisPrice + pwrDemand*hourNetworkPrice;
 					}
 				}
 				currentCounter++;
 			}
-			if (bestPrice>price)
+			if (bestPrice>thisPrice)
 			{
-				bestPrice=price;
+				bestPrice=thisPrice;
 				goodCombo=binary;
 			}
 
@@ -182,7 +169,7 @@ public class OptimalRoiForSolarSystem {
 		Double batteryPower = staringDayBattery; 
 		String[] comboV = goodCombo.split("");
 		
-		double price = 0;
+		double thisPrice = 0;
 		for (Map.Entry<Long, Double> entry : powerDemand.entrySet()) 
 		{
 			
@@ -191,17 +178,17 @@ public class OptimalRoiForSolarSystem {
 			Long hour = entry.getKey();
 			Double pwrDemand = entry.getValue();
             Double generatedPwr = generated.get(hour);
-            Double hourNetworkPrice = networkPrice.get(hour);
+            Double hourNetworkPrice = price.get(hour);
             
             output.fullNetworkPrice+=pwrDemand*hourNetworkPrice;
             
 			if (comboV[currentCounter].equals("0"))
 			{
-				batteryPower=Math.min(batteryPower+generatedPwr,batteryCapacity);
-				price = price + pwrDemand*hourNetworkPrice;
-				output.PVConsumption.put(hour, 0.0);
-				output.pricePerHour.put(hour, pwrDemand*hourNetworkPrice);
-				output.networkConsumption.put(hour, pwrDemand);
+				batteryPower=Math.min(batteryPower+generatedPwr,batteryCapacity.doubleValue());
+				thisPrice = thisPrice + pwrDemand*hourNetworkPrice;
+				output.PVConsumptionSmart.put(hour, 0.0);
+				output.pricePerHourSmart.put(hour, pwrDemand*hourNetworkPrice);
+				output.networkConsumptionSmart.put(hour, pwrDemand);
 			}
 			else 
 			{
@@ -209,10 +196,10 @@ public class OptimalRoiForSolarSystem {
 				{
 					
 					usedPV=pwrDemand;
-					batteryPower=Math.min(batteryPower+generatedPwr-pwrDemand,batteryCapacity);
-					output.PVConsumption.put(hour, usedPV);
-					output.pricePerHour.put(hour, 0.0);
-					output.networkConsumption.put(hour, 0.0);
+					batteryPower=Math.min(batteryPower+generatedPwr-pwrDemand,batteryCapacity.doubleValue());
+					output.PVConsumptionSmart.put(hour, usedPV);
+					output.pricePerHourSmart.put(hour, 0.0);
+					output.networkConsumptionSmart.put(hour, 0.0);
 				}
 				else
 				{	
@@ -220,11 +207,11 @@ public class OptimalRoiForSolarSystem {
 					usedPV=batteryPower+generatedPwr;
 					pwrDemand=pwrDemand-batteryPower-generatedPwr;
 					batteryPower=0.0;
-					output.PVConsumption.put(hour, usedPV);
+					output.PVConsumptionSmart.put(hour, usedPV);
 					//batteryPower+=generatedPwr;
-					price = price + pwrDemand*hourNetworkPrice;
-					output.pricePerHour.put(hour, pwrDemand*hourNetworkPrice);
-					output.networkConsumption.put(hour, pwrDemand);
+					thisPrice = thisPrice + pwrDemand*hourNetworkPrice;
+					output.pricePerHourSmart.put(hour, pwrDemand*hourNetworkPrice);
+					output.networkConsumptionSmart.put(hour, pwrDemand);
 				}
 			}
 			
@@ -232,9 +219,34 @@ public class OptimalRoiForSolarSystem {
 			
 		}
 		
-			output.priceWithPV=price;
-			output.batteryLevel=batteryEnergy;
+			output.priceWithPVSmart=thisPrice;
+			output.batteryLevelSmart=batteryEnergy;
         	System.out.println("end of day bat lvl = "+batteryEnergy);
+        
+        //end smart 
+        
+       
+        return mapper.writeValueAsString(output);
+    }
+	
+	
+	
+	public String calculateSmart(String json) throws IOException {
+        Map<String, Object> map = mapper.readValue(json, HashMap.class);
+        Map<String, Number> generatedPower = (Map<String, Number>) map.get("generatedPower");
+        Number batCapacity = (Number) map.get("batteryCapacity");
+        Map<String, Number> powerDemand = (Map<String, Number>) map.get("powerDemand");
+		Map<String, Number> price = (Map<String, Number>) map.get("price");
+
+        Output result = calculateInternal(new GeneratedPower(generatedPower), new PowerDemand(powerDemand), new Price(price), batCapacity.doubleValue());
+        return mapper.writeValueAsString(result);
+    }
+	
+	public static Output calculateInternal(Map<Long, Double> generated, Map<Long, Double> powerDemand, Map<Long, Double> networkPrice, Double batteryCapacity) 
+	{
+		Output output = new Output();
+		
+		
         	
         	
 		

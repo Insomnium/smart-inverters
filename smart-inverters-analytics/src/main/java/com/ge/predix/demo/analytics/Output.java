@@ -19,47 +19,60 @@ import java.util.Map;
  */
 public class Output 
 {
-	Map<Long, Double> PVConsumption; 
-	Map<Long, Double> networkConsumption;
-	Map<Long, Double> pricePerHour;
+	Map<Long, Double> PVConsumptionSmart; 
+	Map<Long, Double> PVConsumptionDumb; 
+	Map<Long, Double> networkConsumptionSmart;
+	Map<Long, Double> networkConsumptionDumb;
+	Map<Long, Double> pricePerHourSmart;
+	Map<Long, Double> pricePerHourDumb;
 	Double fullNetworkPrice ; 
-	Double priceWithPV;
-	Double batteryLevel ;
+	Double priceWithPVSmart;
+	Double priceWithPVDumb;
+	Double batteryLevelSmart ;
+	Double batteryLevelDumb;
 	
 	public Output()
 	{
 		
-		PVConsumption = new HashMap<Long, Double> ();
-		networkConsumption = new HashMap<Long, Double> ();
-		pricePerHour = new HashMap<Long, Double> ();
+		PVConsumptionSmart = new HashMap<Long, Double> ();
+		networkConsumptionSmart = new HashMap<Long, Double> ();
+		pricePerHourSmart = new HashMap<Long, Double> ();
 		fullNetworkPrice=0.0;
-		priceWithPV= 0.0 ;
-		batteryLevel=0.0;
+		priceWithPVSmart= 0.0 ;
+		batteryLevelSmart=0.0;
+		
+		PVConsumptionDumb = new HashMap<Long, Double> ();
+		networkConsumptionDumb = new HashMap<Long, Double> ();
+		pricePerHourDumb = new HashMap<Long, Double> ();
+		
+		priceWithPVDumb= 0.0 ;
+		batteryLevelDumb=0.0;
 	}
 	
 	public void Summary()
 	{
+		//TODO: add the rest 
 		System.out.print("PV Consumption = ");
-		for (Map.Entry<Long, Double> entry : PVConsumption.entrySet()) 
+		for (Map.Entry<Long, Double> entry : PVConsumptionSmart.entrySet()) 
         {
 			System.out.print(entry.getKey()+" - "+entry.getValue()+" || ");
         }
 		System.out.println();
 		
 		System.out.print("Network Consumption = ");
-		for (Map.Entry<Long, Double> entry : networkConsumption.entrySet()) 
+		for (Map.Entry<Long, Double> entry : networkConsumptionSmart.entrySet()) 
         {
 			System.out.print(entry.getKey()+" - "+entry.getValue()+" || ");
         }
 		System.out.println();
 		
 		System.out.print("Price per Hour = ");
-		for (Map.Entry<Long, Double> entry : pricePerHour.entrySet()) 
+		for (Map.Entry<Long, Double> entry : pricePerHourSmart.entrySet()) 
         {
 			System.out.print(entry.getKey()+" - "+entry.getValue()+" || ");
         }
 		System.out.println();
 		System.out.println("fullNetworkPrice="+fullNetworkPrice);
-		System.out.println("priceWithPV="+priceWithPV);
+		System.out.println("priceWithPV="+priceWithPVSmart);
 	}
 }
