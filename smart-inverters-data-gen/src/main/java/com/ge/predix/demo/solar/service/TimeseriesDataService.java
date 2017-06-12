@@ -180,32 +180,36 @@ public class TimeseriesDataService {
             body.setName(consumer.getUri());
             List<Object> dataPoints = new ArrayList<>();
 
-            List<TimeSeries> timeSeriesList = DataGenerator.generateMonthlyConsumption(currentConsumerProfileList, monthsBefore);
+            if(!currentConsumerProfileList.isEmpty()) {
 
-            for (TimeSeries timeSeries : timeSeriesList) {
-                List<Object> dataPoint = new ArrayList<>();
-                Long timestamp = timeSeries.getInstant().toEpochMilli();
-                dataPoint.add(timestamp);
-                int quality = ThreadLocalRandom.current().nextInt(maxQuality);
-                dataPoint.add(timeSeries.getValue());
-                dataPoint.add(quality);
-                dataPoints.add(dataPoint);
-                dataPointCounter++;
+                List<TimeSeries> timeSeriesList = DataGenerator.generateMonthlyConsumption(currentConsumerProfileList, monthsBefore);
+
+                for (TimeSeries timeSeries : timeSeriesList) {
+                    List<Object> dataPoint = new ArrayList<>();
+                    Long timestamp = timeSeries.getInstant().toEpochMilli();
+                    dataPoint.add(timestamp);
+                    int quality = ThreadLocalRandom.current().nextInt(maxQuality);
+                    dataPoint.add(timeSeries.getValue());
+                    dataPoint.add(quality);
+                    dataPoints.add(dataPoint);
+                    dataPointCounter++;
+                }
+
+                body.setDatapoints(dataPoints);
+
+                com.ge.predix.entity.util.map.Map map = new com.ge.predix.entity.util.map.Map();
+                map.put("host", "server1"); //$NON-NLS-2$
+                map.put("customer", "FooBarCustomer"); //$NON-NLS-2$
+
+                body.setAttributes(map);
+
+                List<Body> bodies = new ArrayList<>();
+                bodies.add(body);
+
+                dpIngestion.setBody(bodies);
+                this.timeseriesClient.postDataToTimeseriesWebsocket(dpIngestion);
             }
 
-            body.setDatapoints(dataPoints);
-
-            com.ge.predix.entity.util.map.Map map = new com.ge.predix.entity.util.map.Map();
-            map.put("host", "server1"); //$NON-NLS-2$
-            map.put("customer", "FooBarCustomer"); //$NON-NLS-2$
-
-            body.setAttributes(map);
-
-            List<Body> bodies = new ArrayList<>();
-            bodies.add(body);
-
-            dpIngestion.setBody(bodies);
-            this.timeseriesClient.postDataToTimeseriesWebsocket(dpIngestion);
         }
         return "Successfully created " + dataPointCounter + " consumer measurements";
     }
