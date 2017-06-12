@@ -210,53 +210,6 @@ public class TimeseriesDataService {
         return "Successfully created " + dataPointCounter + " consumer measurements";
     }
 
-    public String generateConsumerDailyValues(int daysBefore) {
-        long dataPointCounter = 0;
-        // retrieve the list of available consumers
-        List<Consumer> consumerList = springBootRestClient.getAllConsumers();
-        // retrieve the list of available generation profiles
-        List<GeneratorProfile> allGeneratorProfiles = springBootRestClient.getAllGenerationProfiles();
-
-        // generate data for all batteries
-        for (GeneratorProfile generatorProfile : allGeneratorProfiles) {
-
-            DatapointsIngestion dpIngestion = new DatapointsIngestion();
-            dpIngestion.setMessageId(String.valueOf(System.currentTimeMillis()));
-
-            Body body = new Body();
-            body.setName(generatorProfile.getUri());
-            List<Object> dataPoints = new ArrayList<>();
-
-            List<TimeSeries> timeSeriesList = DataGenerator.generateDailyConsumption(currentConsumerProfileList, daysBefore);
-
-            for (TimeSeries timeSeries : timeSeriesList) {
-                List<Object> dataPoint = new ArrayList<>();
-                Long timestamp = timeSeries.getInstant().toEpochMilli();
-                dataPoint.add(timestamp);
-                int quality = ThreadLocalRandom.current().nextInt(maxQuality);
-                dataPoint.add(timeSeries.getValue());
-                dataPoint.add(quality);
-                dataPoints.add(dataPoint);
-                dataPointCounter++;
-            }
-
-            body.setDatapoints(dataPoints);
-
-            com.ge.predix.entity.util.map.Map map = new com.ge.predix.entity.util.map.Map();
-            map.put("host", "server1"); //$NON-NLS-2$
-            map.put("customer", "FooBarCustomer"); //$NON-NLS-2$
-
-            body.setAttributes(map);
-
-            List<Body> bodies = new ArrayList<>();
-            bodies.add(body);
-
-            dpIngestion.setBody(bodies);
-            this.timeseriesClient.postDataToTimeseriesWebsocket(dpIngestion);
-        }
-        return "Successfully created " + dataPointCounter + " consumer measurements";
-    }
-
     private Long generateTimestampsWithinYear(Long current) {
         long yearInMMS = Long.valueOf(31536000000L);
         return ThreadLocalRandom.current().nextLong(current - yearInMMS, current + 1);

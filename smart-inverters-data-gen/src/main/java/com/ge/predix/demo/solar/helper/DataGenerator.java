@@ -57,6 +57,7 @@ public class DataGenerator {
         return result;
     }
 
+    /*
     public static List<TimeSeries> generateDailyConsumption(List<ConsumerProfile> consumerProfileList, int daysBefore) {
         List<TimeSeries> result = new ArrayList<>();
 
@@ -109,15 +110,6 @@ public class DataGenerator {
         LocalDateTime startDateTime = LocalDateTime.of(startDate, midnight);
         LocalDateTime endDateTime = LocalDateTime.of(endDate, midnight);
 
-        ConsumerProfile consumerProfile = null;
-        // select the correct profile for the current day of week: WORKING or WEEKEND
-        for (GeneratorProfile profile : generatorProfileList) {
-            consumerProfile = profile;
-            if (consumerProfile.getWeekDayType().equals(WeekDayType.WORKING) && !WEEKEND_LIST.contains(startDateTime.getDayOfWeek())
-                    || consumerProfile.getWeekDayType().equals(WeekDayType.WEEKEND) && WEEKEND_LIST.contains(startDateTime.getDayOfWeek())) {
-                break;
-            }
-        }
         // generate a random consumption value per day
         Double dailyConsumption = ThreadLocalRandom.current().nextDouble(consumerProfile.getMinValue(), consumerProfile.getMaxValue());
         for (Interval interval : consumerProfile.getIntervals()) {
@@ -141,4 +133,5 @@ public class DataGenerator {
         return result;
     }
 
+    */
 }

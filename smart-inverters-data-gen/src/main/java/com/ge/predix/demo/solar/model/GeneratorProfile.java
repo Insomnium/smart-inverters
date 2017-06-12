@@ -7,7 +7,6 @@ import java.util.List;
  */
 public class GeneratorProfile {
 
-    private String uri;
     private AssetCategory assetCategory;
     private List<Interval> intervals;
 
@@ -27,18 +26,9 @@ public class GeneratorProfile {
         this.intervals = intervals;
     }
 
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
     @Override
     public String toString() {
         return "GeneratorProfile{" +
-                "uri='" + uri + '\'' +
                 ", assetCategory=" + assetCategory +
                 ", intervals=" + intervals +
                 '}';
