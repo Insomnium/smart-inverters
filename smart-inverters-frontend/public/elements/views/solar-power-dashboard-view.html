@@ -1,0 +1,621 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-collapse/iron-collapse.html">
+<link rel="import" href="../../bower_components/px-dropdown/px-dropdown.html">
+<link rel="import" href="../../bower_components/px-modal/px-modal.html">
+<link rel="import" href="../../bower_components/paper-progress/paper-progress.html">
+<link rel="import" href="../../bower_components/dy-graphs/dy-graphs.html">
+<link rel="import" href="operator-dashboard-view-styles.html">
+
+<link rel="import" href="../../bower_components/google-chart/google-chart.html">
+<script src="../../bower_components/moment/moment.js"></script>
+<script src="../../bower_components/numeral/numeral.js"></script>
+
+
+<link rel="import" href="../../bower_components/google-map/google-map.html">
+<link rel="import" href="../../bower_components/google-map/google-map-poly.html">
+
+<dom-module id="solar-power-dashboard-view">
+  <template>
+
+    <style include="operator-dashboard-view-styles"></style>
+
+    <div class="flex--row flex flex--center u-m--">
+      <h2> Solar Power dashboard </h2>
+    </div>
+
+    <div class="layout u-mt--" style="height: 85vh;">
+      <div class="layout__item u-1/2">
+
+        <google-map latitude="44.4310916" longitude="26.0233373" zoom="15" min-zoom="12" max-zoom="22" language="en"
+                    api-key="AIzaSyB-uDb0wvtXzNncAWGsDrU2m_y-B01y5FA">
+
+          <template is="dom-repeat" items="{{_paths}}" as="path">
+            <google-map-poly stroke-color="[[path.color]]"
+                             stroke-weight="4">
+              <template is="dom-repeat" items="{{path.coords}}" as="point">
+                <google-map-point latitude="[[point.lat]]" longitude="[[point.lng]]"></google-map-point>
+              </template>
+            </google-map-poly>
+          </template>
+
+
+          <template is="dom-repeat" items="{{_connections}}" as="path">
+            <google-map-poly stroke-color="#e60000" stroke-weight="2">
+              <template is="dom-repeat" items="{{path.coords}}" as="point">
+                <google-map-point latitude="[[point.lat]]" longitude="[[point.lng]]"></google-map-point>
+              </template>
+            </google-map-poly>
+          </template>
+
+
+          <template is="dom-repeat" items="[[_consumers]]" as="consumer">
+            <google-map-marker latitude="[[consumer.coords.lat]]"
+                               longitude="[[consumer.coords.lng]]"
+                               icon="[[consumer.icon]]"
+                               click-events
+                               on-google-map-marker-click="_selectConsumer">
+            </google-map-marker>
+
+          </template>
+        </google-map>
+      </div>
+      <div class="layout__item u-1/2 content u-ml-- u-p ">
+
+
+        <div hidden$="[[!_hideGraphs]]" class="u-mt++">
+          <h2 class="gray delta u-m++ u-p++ text--center">Choose a consumer to calculate the solar panel return of investment</h2>
+        </div>
+        <div hidden$="[[_hideGraphs]]">
+
+          <px-dropdown on-px-dropdown-value-changed="_periodChanged" id="monthsDropdown" >
+            <px-dropdown-content  items='[[_lastFewMonths]]'></px-dropdown-content>
+          </px-dropdown>
+
+          <div class="u-ml++ pointer">
+            <h2 class="gamma u-mb--"><i class$="fa [[_consumerIcon]]"></i>[[_consumerType]] </h2>
+            <ul class="list-ui list-ui--tiny">
+              <li class="list-ui__item">Used power: [[_usedPower]] (kW)</li>
+              <li class="list-ui__item">Cost: [[_cost]] $</li>
+            </ul>
+            <h3 class="epsilon gray">{{_selectedConsumer.address}}</h3>
+          </div>
+
+          <div class="u-mb++">
+            <dy-graphs id="dygraphChart" data="[[_usedPowerAndCostData]]" options="[[_dygraphOptions1]]"></dy-graphs>
+          </div>
+
+
+          <div class="u-mt++ u-pt++ flex flex--row flex--center ">
+            <px-modal btn-modal-negative="Close" modal-heading="Solar power system offering">
+
+              <button class="btn btn-lg modal-trigger">Calculate solar power system offering</button>
+
+              <px-dropdown on-px-dropdown-value-changed="_panelChanged" id="solarSystemsDropdown">
+                <px-dropdown-content items='[[_solarSystems]]'></px-dropdown-content>
+              </px-dropdown>
+
+
+              <div hidden$="[[!_showPanelDetails]]">
+                <h2 class="delta u-m u-p">{{_selectedPanel.name}}</h2>
+                <button on-click="_toggleCollapse">Panel Details</button>
+                <iron-collapse id="_collapsePanel">
+                  <div>
+                    <ul class="list-ui list-ui--tiny">
+                      <li class="list-ui__item"><b>Max Power (W) :</b> [[_selectedPanel.maxPower]]</li>
+                      <li class="list-ui__item"><b>Total system Price (USD) :</b> [[_selectedPanel.price]]</li>
+                    </ul>
+                    <a href$="[[_selectedPanel.url]]"> Manufacturer details </a>
+
+                    <!-- Panels section -->
+                    <h2 class="epsilon u-mt++"> Panels </h2>
+
+                    <div class="flex flex--row">
+                      <div class="u-mr+">
+                        <a href$="[[_selectedPanel.panels.url]]">
+                          <img src$="[[_selectedPanel.panels.img]]" width="100" height="150">
+                        </a>
+                      </div>
+                      <div class="flex__item">
+                        <ul class="list-ui list-ui--tiny">
+                          <li class="list-ui__item"><b>Name :</b> [[_selectedPanel.panels.name]]</li>
+                          <li class="list-ui__item"><b>Quantity :</b> [[_selectedPanel.panels.qty]]</li>
+                          <li class="list-ui__item"><b>Power (W) :</b> [[_selectedPanel.panels.noctPower]]</li>
+                          <li class="list-ui__item"><b>Price per unit (USD) :</b> [[_selectedPanel.panels.price]]</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <!-- Inverter section -->
+                    <h2 class="epsilon u-mt++"> Inverters </h2>
+
+                    <div class="flex flex--row">
+                      <div class="u-mr+ ">
+                        <a href$="[[_selectedPanel.panels.url]]">
+                          <img src$="[[_selectedPanel.inverters.img]]" width="100">
+                        </a>
+                      </div>
+                      <div class="flex__item">
+                        <ul class="list-ui list-ui--tiny">
+                          <li class="list-ui__item"><b>Name :</b> [[_selectedPanel.inverters.name]]</li>
+                          <li class="list-ui__item"><b>Quantity :</b> [[_selectedPanel.inverters.qty]]</li>
+                          <li class="list-ui__item"><b>Price per unit (USD) :</b> [[_selectedPanel.inverters.price]]</li>
+                        </ul>
+                      </div>
+                    </div>
+
+
+                    <!-- Battery section -->
+                    <h2 class="epsilon u-mt++"> Batteries </h2>
+
+                    <div class="flex flex--row">
+                      <div class="u-mr+ ">
+                        <a href$="[[_selectedPanel.battery.url]]">
+                          <img src$="[[_selectedPanel.battery.img]]" width="100">
+                        </a>
+                      </div>
+                      <div class="flex__item">
+                        <ul class="list-ui list-ui--tiny">
+                          <li class="list-ui__item"><b>Name :</b> [[_selectedPanel.battery.name]]</li>
+                          <li class="list-ui__item"><b>Quantity :</b> [[_selectedPanel.battery.qty]]</li>
+                          <li class="list-ui__item"><b>Nominal Amp ([[_selectedPanel.battery.unitAmp]]):</b> [[_selectedPanel.battery.nominalAmp]]</li>
+                          <li class="list-ui__item"><b>Voltage (V) :</b> [[_selectedPanel.battery.voltage]]</li>
+                          <li class="list-ui__item"><b>Nominal Power 5hr discharge ( qty x voltage x amp ) :</b> [[_batteryPower]]</li>
+                          <li class="list-ui__item"><b>Price per unit (USD) :</b> [[_selectedPanel.battery.price]]</li>
+                        </ul>
+                      </div>
+                    </div>
+
+                    <!-- Solar iradiance section -->
+
+                    <h2 class="epsilon u-mt++"> Solar panel daily power output </h2>
+
+                    <div class="u-ph+">
+                      <google-chart id="irradianceChart"
+                                    type='column'
+                                    options='[[_optionsIrradiance]]'
+                                    data="[[_solarGeneratedPower]]">
+                      </google-chart>
+                    </div>
+                  </div>
+                </iron-collapse>
+
+                      <div class="flex flex--row flex--center u-mt++ u-ph++">
+                  <button class="btn btn-lg" on-click="_calculateRoi" id="calcRoi">
+                    <i class="fa fa-spinner fa-spin" hidden$="[[_calcRoiSpinner]]"></i>
+                    [[_calculateActionText]]
+                  </button>
+                </div>
+
+                <div class="u-mt++ u-pt++" hidden$="[[_savedPowerDataNotAvailable]]">
+                  <h2 class="epsilon u-mt++">Power consumed from solar panel </h2>
+
+                  <dy-graphs id="savedPowerChart" data="[[_savedPowerData]]" options="[[_dygraphOptions2]]"></dy-graphs>
+
+                  <h3 class="epsilon u-mt++">Amount saved in [[_selectedMonth.val]]: <b>[[_savedAmountPerMonth]]$</b></h3>
+                  <h3 class="epsilon u-mt++">Amortization time: <b>[[_timeOfAmortization]] months</b></h3>
+                </div>
+
+                <paper-progress indeterminate class="slow red u-mt++" hidden$="[[_calcRoiSpinner]]"></paper-progress>
+              </div>
+            </px-modal>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <iron-ajax auto url="/predix-api/predix-asset/power-line" last-response={{_paths}}></iron-ajax>
+    <iron-ajax auto url="/predix-api/predix-asset/consumer" last-response={{_consumers}} on-response="_initConnections"></iron-ajax>
+    <iron-ajax auto url="/predix-api/predix-asset/solar-power-system" last-response={{_solarSystems}} on-response="_initPanels"></iron-ajax>
+    <iron-ajax id="datapointRequest" url="/predix-api/predix-timeseries/v1/datapoints"
+               method="post"
+               content-type="application/json"
+               on-response="_initChartData"></iron-ajax>
+    <iron-ajax id="geocode" url="https://maps.googleapis.com/maps/api/geocode/json" on-response="_initConsumerAddress"></iron-ajax>
+    <iron-ajax id="analyticRequest"
+               method="post"
+               content-type="application/json"
+               url="/predix-api/predix-analytics-framework/api/v1/catalog/analytics/2cf4c1c3-fb68-4391-a0b0-9aea839b6b25/execution"
+               on-response="_redrawChart"></iron-ajax>
+  </template>
+</dom-module>
+<script>
+
+  Polymer({
+    is: 'solar-power-dashboard-view',
+    ready: function () {
+      var periods = [];
+      var date = new Date(2016, 11, 11);
+      for (var i = 0; i < 3; i++) {
+
+        periods.push({
+          key: i + 1,
+          val: moment(date).format('MMMM YYYY'),
+          time: new Date(date)
+        });
+        date.setMonth(date.getMonth() - 1);
+      }
+      this.set('_lastFewMonths', periods);
+      this.$.monthsDropdown.fire('px-dropdown-value-changed',periods[0]);
+    },
+
+    properties: {
+      _hideGraphs: {
+        type: Boolean,
+        value: true
+      },
+      _showPanelDetails: {
+        type: Boolean,
+        value: false
+      },
+      _batteryPower: {
+        type: String,
+        value: '',
+        computed: '_battPwr(_selectedPanel)'
+      },
+      _dygraphOptions1: {
+        type: Object,
+        value: {
+          legend: "always",
+          strokeWidth: 1.5,
+          drawPoints: true,
+          pointSize: 2,
+          height: 300,
+          series: {
+            'Used Power': {
+              color: 'red'
+            }
+          },
+          labels: ['Date', "Used Power"],
+          showRangeSelector: true
+        }
+      },
+      _dygraphOptions2: {
+        type: Object,
+        value: {
+          strokeWidth: 2.5,
+          drawPoints: true,
+          pointSize: 3,
+          height: 360,
+          series: {
+            'Generated Power': {
+              color: 'green'
+              ,strokePattern: [10, 10]
+            },
+            'Used Power': {
+              color: 'red'
+              ,strokePattern: [0, 10, 10, 0]
+            }
+          },
+          labels: ['Date', "Generated Power", "Used Power"],
+          showRangeSelector: true
+        }
+      },
+      _optionsIrradiance: {
+        type: Object,
+        value: {
+          "explorer": {
+            axis: "horizontal",
+            keepInBounds: true,
+            maxZoomIn: 0.001,
+            "actions": ["dragToZoom", "rightClickToReset"]
+          },
+          "bar": {groupWidth: "50%"},
+          "legend": {"position": "bottom"},
+          "hAxis": {"title": "Time"},
+          "vAxis": {"title": "Power output (W)"},
+          "height": "400",
+          "width": "900"
+        }
+      },
+      _usedPowerAndCostData: {
+        type: Array,
+        value: [[new Date(), 0]]
+      },
+      _savedPowerData: {
+        type: Array,
+        value:[[new Date(), 0, 0]]
+      },
+      _solarIrradiance: {
+        type: Array,
+        value: [["07:00", 10],
+          ["08:00", 20],
+          ["09:00", 30],
+          ["10:00", 40],
+          ["11:00", 60],
+          ["12:00", 80],
+          ["13:00", 100],
+          ["14:00", 100],
+          ["15:00", 100],
+          ["16:00", 80],
+          ["17:00", 60],
+          ["18:00", 40],
+          ["19:00", 30],
+          ["20:00", 20],
+          ["21:00", 10]
+        ]
+      },
+      _solarGeneratedPower: {
+        type: Array,
+        value: [[{type: 'string', role: 'domain'}, {type: 'number', role: 'data'}]]
+      },
+      _selectedConsumer: {
+        type: Object,
+        observer: '_selectedConsumerChanged'
+      },
+      _calcRoiSpinner: {
+        type: Boolean,
+        value: true
+      },
+      _savedPowerDataNotAvailable: {
+        type: Boolean,
+        value: true
+      },
+      _calculateActionText: {
+        type: String,
+        value: 'Calculate Return of investment for consumer'
+      }
+    },
+    _toggleCollapse: function () {
+        this.$._collapsePanel.toggle();
+    },
+    _initConnections: function (data) {
+      var response = data.detail.response;
+      var connections = [];
+      response.forEach(function (item) {
+        // a line from this marker's coords to the joinpoint coords
+        item.type == 'RESIDENTIAL' ? item.icon = "/images/buildings/Apartment-Building.png" : item.icon = '/images/buildings/industry.png';
+        connections.push({coords: [item.powerLineJoinpoint, item.coords]});
+      });
+      this.set('_connections', connections);
+    },
+
+    _selectConsumer: function (e) {
+      var item = e.model._config.consumer;
+      var _this = this;
+      _this.set('_selectedConsumer', item);
+      this._consumers.forEach(function (cons, idx) {
+        var consumerExpr = '_consumers.#' + idx + ".icon";
+        var images = "/images/buildings/";
+        if(item==cons) {
+          if (item.type == 'RESIDENTIAL') {
+            _this.set(consumerExpr, images + "Apartment-Building_s.png");
+            _this.set('_hideGraphs', false);
+          }
+          else {
+            _this.set(consumerExpr, images + "industry_s.png");
+            _this.set('_hideGraphs', false);
+          }
+        }else{
+          if (cons.type == 'RESIDENTIAL') {
+            _this.set(consumerExpr, images + "Apartment-Building.png");
+          }
+          else {
+            _this.set(consumerExpr, images + "industry.png");
+          }
+        }
+      });
+    },
+
+    _selectedConsumerChanged: function (newVal, oldVal) {
+      if (!newVal) {
+        return;
+      }
+
+      this.$.geocode.params = {
+        latlng: newVal.coords.lat + "," + newVal.coords.lng,
+        key: 'AIzaSyB-uDb0wvtXzNncAWGsDrU2m_y-B01y5FA'
+      };
+      this.$.geocode.generateRequest();
+
+      this.$.datapointRequest.body = this._timeseriesQuery();
+      this.$.datapointRequest.generateRequest();
+      this.set('_savedPowerDataNotAvailable', true);
+    },
+
+    _periodChanged: function (newVal, oldVal) {
+      if (!newVal) {
+        return;
+      }
+      this.set("_selectedMonth", newVal.detail);
+      this.set('_savedPowerDataNotAvailable', true);
+      if (this._selectedConsumer){
+        this.$.datapointRequest.body = this._timeseriesQuery();
+        this.$.datapointRequest.generateRequest();
+      }
+    },
+
+    _initConsumerAddress: function (data) {
+      var response = data.detail.response;
+      var results = response.results;
+      if (results.length) {
+        this.set('_selectedConsumer.address', results[0].formatted_address);
+        var tp = this._selectedConsumer.type;
+        this.set('_consumerIcon', tp == 'RESIDENTIAL' ? 'fa-home' : 'fa-building-o');
+        this.set('_consumerType', tp == 'RESIDENTIAL' ? 'Residential consumer' : 'Commercial consumer');
+
+      }
+    },
+
+    _initPanels: function (data) {
+      var panels = data.detail.response;
+
+      if (!panels)
+        return;
+
+      panels.forEach(function (panel) {
+        panel.key = panel.uri;
+        panel.val = panel.shortName;
+      });
+
+      this.$.solarSystemsDropdown.fire('px-dropdown-value-changed',panels[0]);
+    },
+
+    _timeseriesQuery: function () {
+      var selectedMonthKey = this.$.monthsDropdown.selectedKey;
+      var dayOfMonth = this._lastFewMonths[parseInt(selectedMonthKey) - 1].time;
+      var startDate = new Date(dayOfMonth.getFullYear(), dayOfMonth.getMonth(), 1);
+      var endDate = new Date(dayOfMonth.getFullYear(), dayOfMonth.getMonth() + 1, 0);
+      var query = {cache_time: 0, start: startDate.getTime(), end: endDate.getTime()};
+      var tags = [];
+
+      tags.push({name: this._selectedConsumer.uri, sort: 'asc'});
+
+      query.tags = tags;
+
+      return query;
+    },
+
+    _initChartData: function (data) {
+      var resp = data.detail.response;
+      if (!resp) {
+        return;
+      }
+
+      var values = resp.tags[0].results[0].values;
+
+      var chartData = [];
+
+      this.set('_userPowerTimeseries', values);
+      values.forEach(function (datapoint) {
+        var date = new Date(datapoint[0]);
+        var label = moment(datapoint[0]).format("[Hour:] hh:ss [<br/> Used Power :]");
+        var kws = datapoint[1] * 1000;
+        var kwsLbl = numeral(kws).format("0") + " W";
+        chartData.push([date, kws]);
+      });
+
+      this.set('_usedPowerAndCostData', []);
+      this.set('_usedPowerAndCostData', chartData);
+      this._initMonthlyConsumption();
+
+      this.$.dygraphChart.dygraph.resize();
+    },
+
+    _initMonthlyConsumption: function () {
+      var usedPower = this.get('_usedPowerAndCostData');
+      var monthlyCost = 0;
+      var montlyUsedPower = 0;
+      var _this = this;
+      usedPower.forEach(function (item, idx) {
+        if (idx == 0)
+          return;
+        var time = item[0];
+        var kwh = item[1] / 1000;
+        montlyUsedPower += kwh;
+        monthlyCost += _this._pricePerKWPerHour(time) * kwh;
+      });
+      this.set('_usedPower', numeral(montlyUsedPower).format("0"));
+      this.set('_cost', numeral(monthlyCost).format("0.00"));
+    },
+
+    _pricePerKWPerHour: function (time) {
+      var hour = time.getHours();
+      if (hour > 21 || hour < 7)
+        return 4.22;
+      else
+        return 1.36;
+    },
+
+    _panelChanged: function (e) {
+      if (!e.detail.key) return;
+
+
+      var newSensor = this._solarSystems.find(function (item) {
+        return item.uri == e.detail.key
+      });
+
+      var _this = this;
+      this.set('_selectedPanel', newSensor);
+      this.set('_showPanelDetails', true);
+
+      var genPwrData = [this._solarGeneratedPower[0]];
+      var panelPwr = this._selectedPanel.panels.noctPower;
+      var noOfPanels = this._selectedPanel.panels.qty;
+      this._solarIrradiance.forEach(function (item) {
+        var genPwr = item[1] / 100 * panelPwr * noOfPanels;
+        genPwrData.push([item[0], genPwr]);
+      });
+
+      this.set('_solarGeneratedPower', genPwrData);
+      this.set('_savedPowerDataNotAvailable', true);
+    },
+
+    _battPwr: function () {
+      if (!this._selectedPanel)
+        return;
+      var bat = this._selectedPanel.battery;
+      var pow = bat.nominalAmp * bat.qty * bat.voltage;
+      return numeral(pow).format("0");
+    },
+
+    _calculateRoi: function (evt) {
+      this.set('_calcRoiSpinner', false);
+      this.$.calcRoi.setAttribute('disabled', '');
+      this.set('_calculateActionText', 'Calculating ...');
+
+      var powerDemand = {};
+      var generatedPower = {};
+      var bat = this._selectedPanel.battery;
+      var batteryCapacity = bat.nominalAmp * bat.qty * bat.voltage;
+      var demandTs = this.get('_userPowerTimeseries');
+      var solarPwrTs = this.get('_solarGeneratedPower');
+      demandTs.forEach(function(datapoint){
+        powerDemand[datapoint[0].toString()] = datapoint[1] * 1000;
+        var hour = moment(datapoint[0]).format('HH:00');
+        var generatedForhour = 0;
+        solarPwrTs.forEach(function(pwr){
+          if (hour == pwr[0]){
+            generatedForhour = pwr[1];
+          }
+        });
+        generatedPower[datapoint[0].toString()] = generatedForhour;
+      });
+      var request = {powerDemand: powerDemand, batteryCapacity: batteryCapacity, generatedPower: generatedPower};
+
+      this.$.analyticRequest.body = request;
+      this.$.analyticRequest.generateRequest();
+    },
+
+    _redrawChart: function(data){
+      var usedPowerData = this.get('_usedPowerAndCostData');
+      var response = data.detail.response;
+      if (!response) {
+        return;
+      }
+      var newPowerData = [];
+      var result = JSON.parse(response.result);
+      var _savedAmountPerMonth = 0;
+      var i=0;
+      for (var d in result) {
+        var date = new Date(Number.parseInt(d));
+        var usedkWh = 0;
+        if (usedPowerData[i] && usedPowerData[i][1]+5)
+          usedkWh = usedPowerData[i][1];
+        newPowerData.push([date, result[d], usedkWh]);
+        _savedAmountPerMonth += this._pricePerKWPerHour(date) * result[d] / 1000;
+        i++;
+      }
+      this.set('_savedPowerData', newPowerData);
+      this.set("_savedAmountPerMonth", numeral(_savedAmountPerMonth).format("0.00"));
+      this.set("_timeOfAmortization", numeral(this._selectedPanel.price / _savedAmountPerMonth).format("0"));
+
+      this.set('_calcRoiSpinner', true);
+      this.set('_savedPowerDataNotAvailable', false);
+      this.$.calcRoi.removeAttribute('disabled');
+      this.set('_calculateActionText', 'Calculate Return of investment for consumer');
+
+      var firstValue = newPowerData[0][0];
+      var start = new Date(firstValue);
+      var end = new Date(firstValue);
+      end.setHours(end.getHours() + 24);
+      this._dygraphOptions2.dateWindow = [start, end];
+
+      this.$.savedPowerChart.dygraph.resize();
+      this.$.savedPowerChart.scrollIntoView();
+    }
+
+  });
+</script>

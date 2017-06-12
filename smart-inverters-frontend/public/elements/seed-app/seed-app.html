@@ -26,12 +26,15 @@
       <div class="viewport flex">
         <h3 class="flex__item app-title">
           <ge-svg-logo class="u-mr--"></ge-svg-logo>
-          Advanced Analytics and Visualisation Platform
+          Solar Panels Monitor
         </h3>
         <div class="flex__item">
           <div class="flex" style="text-align:right;">
             <h3 class="flex__item weight--normal logo">Powered by
               <predix-logo style="display:inline-block; width: 82px;" class="flex__item"></predix-logo>
+            </h3>
+            <h3 class="flex__item weight--normal">
+              <button class="btn" on-click="_logout" target="_self">Logout</button>
             </h3>
           </div>
         </div>
@@ -57,19 +60,16 @@
           </app-location>
 
           <!-- /dashboards route and view -->
-
-
-          <!-- /operator-dashboard route and view -->
+          <!-- /solar-power-dashboard route and view -->
           <app-route
             route="[[_route]]"
-            pattern="/operator-dashboard"
-            active="{{_operatorDashboardActive}}">
+            pattern="/solar-power-dashboard"
+            active="{{solarDashboardActive}}">
           </app-route>
           <px-view
-            active="[[_operatorDashboardActive]]"
-            element-href="/views/operator-dashboard-view.html">
+            active="[[solarDashboardActive]]"
+            element-href="/elements/views/solar-power-dashboard-view.html">
           </px-view>
-
 
         </main>
       </div>
@@ -95,7 +95,7 @@
           value: function () {
             return {
               version: '1.0',
-              name: 'Bucharest Power Grid Monitor',
+              name: 'Hawaii PV',
               session: {}
             }
           }
@@ -104,10 +104,11 @@
         navItems: {
           type: Array,
           value: function () {
-            return [{
-                "label": "Operator dashboard",
-                "path": "/operator-dashboard/dflt",
-                "icon": "fa-line-chart"
+            return [
+              {
+                "label": "Solar Power Dashboard",
+                "path": "/solar-power-dashboard",
+                "icon": "fa-tachometer"
               }
             ]
           }
@@ -118,23 +119,23 @@
           value: function () {
             return [{
               "label": "Privacy",
-              "href": "#/operator-dashboard",
+              "href": "#/solar-power-dashboard",
               "target": "_blank"
             }, {
               "label": "Terms",
-              "href": "#/operator-dashboard",
+              "href": "#/solar-power-dashboard",
               "target": "_blank"
             }, {
               "label": "Contact",
-              "href": "#/operator-dashboard",
+              "href": "#/solar-power-dashboard",
               "target": "_blank"
             }, {
               "label": "Accessibility",
-              "href": "#/operator-dashboard",
+              "href": "#/solar-power-dashboard",
               "target": "_blank"
             }, {
               "label": "Cookies",
-              "href": "#/operator-dashboard",
+              "href": "#/solar-power-dashboard",
               "target": "_blank"
             }
             ]
@@ -156,8 +157,11 @@
         // set default route to /dashboards
         var l = window.location;
         if ((l.hash === "#/" || l.hash === "") && l.pathname === "/") {
-          l.hash = "/operator-dashboard/dflt";
+          l.hash = "/solar-power-dashboard/dflt";
         }
+      },
+      _logout: function(e){
+        window.location.href = '/logout';
       }
 
     });

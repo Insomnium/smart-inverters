@@ -21,10 +21,3 @@ $px-page-banner-text-color: $gray4;
 $px-page-banner-meatball-color : $gray4;
 $px-page-main-content-area-background-color: $graybg;
 
-
-html,body {
-  margin: 0;
-  background: var(--px-seed-header-backgrounde-color, $px-page-html-background-color);
-  font-family: $predix-font-family;
-  font-weight: normal;
-}

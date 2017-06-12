@@ -70,15 +70,15 @@ if (config.isUaaConfigured()) {
 
   //Use this route to make the entire app secure.  This forces login for any path in the entire app.
   app.use('/', passport.authenticate('main', {noredirect: false}),
-    express.static(path.join(__dirname, '../public/content'))
+    express.static(path.join(__dirname, '../public'))
   );
 
   // access real Predix services using this route.
   // the proxy will add UAA token and Predix Zone ID.
-  app.use('/px-api', passport.authenticate('main', {noredirect: true}), proxy.router);
+  app.use('/predix-api', passport.authenticate('main', {noredirect: true}), proxy.router);
 
 } else {
-  app.use(express.static(path.join(__dirname, '../public/content')));
+  app.use(express.static(path.join(__dirname, '../public')));
 }
 
 
