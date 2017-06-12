@@ -1,0 +1,51 @@
+server:
+    port: 9092
+
+spring:
+    profiles:
+        active: global
+
+logging:
+    level:
+        org: INFO
+        com: INFO
+
+predix:
+    timeseries:
+        queryUrl: https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints
+        zoneid: 0eb746ab-bdb7-4b8b-b34b-b27a47412808
+        websocket:
+            uri: wss://gateway-predix-data-services.run.aws-usw02-pr.ice.predix.io/v1/stream/messages
+            pool:
+                maxIdle: 5
+                maxActive: 5
+                maxWait: 8000
+    oauth:
+        issuerId:
+            url: https://3c67835a-fe2a-4e17-8b68-657a2e4512c8.predix-uaa.run.aws-usw02-pr.ice.predix.io/oauth/token
+        clientIdEncode: true
+        clientId: app_client:app_client
+    asset:
+        zoneid: 2c69ea26-667a-4101-b179-f79c26f139c1
+        restHost: predix-asset.run.aws-usw02-pr.ice.predix.io
+        assetSocketTimeout: 40000
+        connectionTimeout: 40000
+
+sensor:
+    max:
+        quality: 4
+
+consumer:
+    rest:
+        service:
+             url: https://predix-asset.run.aws-usw02-pr.ice.predix.io/consumer
+    profile:
+        rest:
+            service:
+                url: https://predix-asset.run.aws-usw02-pr.ice.predix.io/consumption
+
+generation:
+    profile:
+        rest:
+            service:
+                url: https://predix-asset.run.aws-usw02-pr.ice.predix.io/generation
