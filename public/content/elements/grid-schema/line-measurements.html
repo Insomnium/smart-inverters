@@ -1,0 +1,50 @@
+
+<!-- import polymer -->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../views/operator-dashboard-view-styles.html">
+
+
+<!-- import page level css -->
+<link rel="import" href="../../views/operator-dashboard-view-styles.html">
+
+
+<dom-module id="line-measurements">
+    <template>
+        <style include="operator-dashboard-view-styles"></style>
+
+        <template is="dom-repeat" items="{{measures}}" as="measure">
+            <div>
+                <template is="dom-if" if="[[isIn(measure)]]">
+                    <i class="fa fa-long-arrow-left"></i>
+                </template>
+                <template is="dom-if" if="[[!isIn(measure)]]">
+                    <i class="fa fa-long-arrow-right"></i>
+                </template>
+                [[measure.value]] [[measure.unit]]
+            </div>
+        </template>
+    </template>
+</dom-module>
+<script>
+    Polymer({
+        is: 'line-measurements',
+        properties: {
+            measures: {
+                type: Array,
+                value: [{
+                    unit: 'MW',
+                    value: 0.0,
+                    type: 'IN'
+                }, {
+                    unit: 'MR',
+                    value: 0.0,
+                    type: 'OUT'
+                }]
+            }
+        }
+        ,
+        isIn: function (measure) {
+            return measure.type === 'IN';
+        }
+    });
+</script>

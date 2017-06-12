@@ -1,0 +1,227 @@
+<!-- import polymer -->
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/px-tooltip/px-tooltip.html">
+<link rel="import" href="../../bower_components/px-modal/px-modal.html">
+<link rel="import" href="../../bower_components/px-dropdown/px-dropdown.html">
+<link rel="import" href="../../bower_components/px-simple-line-chart/px-simple-line-chart.html">
+
+<!-- import page level css -->
+<link rel="import" href="../../views/operator-dashboard-view-styles.html">
+
+<link rel="import" href="line-measurements.html"/>
+
+
+<dom-module id="grid-schema">
+  <template>
+    <style include="operator-dashboard-view-styles"></style>
+
+    <div class="grid-schema-container flex flex--row">
+
+      <!-- exterior incoming line -->
+      <div class=" flex__item--bottom">
+        <template is="dom-repeat" items="[[lines.incoming]]" as="line" id="incoming-it" index-as="idx">
+          <div class="flex flex--row " on-click="_openLineDetails">
+            <px-tooltip delay="30" tooltip-message="[[line.name]]" orientation="auto"
+                        tooltip-style="dark"></px-tooltip>
+            <px-modal btn-modal-positive="OK" btn-modal-negative="Cancel" modal-heading="[[line.name]]">
+
+
+              <p><b>MW (t)</b></p>
+
+              <p>
+                <px-simple-line-chart line-data='[[1397102460000,1.99],[1397139660000,1.92],
+                            [1397177400000,1.97],[1397228040000,1.12],[1397248260000,1.09],[1397291280000,1],
+                            [1397318100000,1.99],[1397342100000,1.75],[1397390820000,1.11],[1397408100000,1.93],
+                            [1397418100000,1.99],[1397428100000,1.75],[1397438100000,1.11],[1397448100000,1.93],
+                            [1397458100000,1.99],[1397468100000,1.75],[1397478100000,1.11],[1397488100000,1.93],
+                            [1397498800000,1.84],[1397522940000,1.99]]'
+                                      width="auto" height="400" columns="8" rows="5">
+                </px-simple-line-chart>
+              </p>
+
+              <br/>
+              <px-dropdown id="dropdown" display-value="Select Power System" >
+                <px-dropdown-content checkbox-mode='true' search-mode='true' extend-dropdown='true' items='{{sensors}}'></px-dropdown-content>
+              </px-dropdown>
+              <br/>
+
+            </px-modal>
+            <div class="incoming-numbers flex__item--middle">
+              <line-measurements measures="[[line.measurments]]"></line-measurements>
+            </div>
+            <div style$="border-color:[[incomingColor]]"
+                 class="incoming-line-ext flex__item flex__item--middle"></div>
+            <!-- the ---)|--- sign   -->
+            <div style$="border-color:[[incomingColor]]" class="rounded-right flex__item--middle">
+              &nbsp;</div>
+            <div style$="border-color:[[incomingColor]]" class="straight-left flex__item--middle">
+              &nbsp;</div>
+            <!-- interior incoming  line -->
+            <div style$="border-color:[[incomingColor]]" class="incoming-line-int flex__item--middle"></div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Main junction line -->
+      <div style$="border-color:[[incomingColor]]" class="main-line flex__item--middle"></div>
+
+
+      <!-- outgoing line -->
+      <div class="flex__item flex_item--top">
+        <template is="dom-repeat" items="{{lines.outgoing}}" as="line">
+          <div class="flex flex--row" on-click="_openLineDetails">
+            <px-tooltip delay="30" tooltip-message="[[line.name]]" orientation="auto"
+                        tooltip-style="dark"></px-tooltip>
+            <px-modal btn-modal-positive="OK" btn-modal-negative="Cancel" modal-heading="[[line.name]]">
+              <p><b>MW (t)</b></p>
+
+              <p>
+                <px-simple-line-chart line-data='[[1397102460000,1.99],[1397139660000,1.92],
+                            [1397177400000,1.97],[1397228040000,1.12],[1397248260000,1.09],[1397291280000,1],
+                            [1397318100000,1.99],[1397342100000,1.75],[1397390820000,1.11],[1397408100000,1.93],
+                            [1397458800000,1.84],[1397522940000,1.99]]'
+                                      width="auto" height="200" max="3" min="0"
+                                      columns="8" rows="5">
+                </px-simple-line-chart>
+              </p>
+            </px-modal>
+            <div style$="border-color:[[incomingColor]]" class="outgoing-line-int"></div>
+
+            <!-- The transformer symbol -->
+            <div style$="border-color:[[incomingColor]]" class="transf-int flex__item--middle"></div>
+            <div style$="border-color:[[outgoingColor]]" class="transf-ext flex__item--middle"></div>
+
+            <!-- outgoing line-->
+            <div style$="border-color:[[outgoingColor]]" class="flex__item outgoing-line-ext"></div>
+
+            <!-- line measurements -->
+            <div class="flex__item--middle">
+              <line-measurements measures="[[line.measurments]]"></line-measurements>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
+</dom-module>
+<script>
+  Polymer({
+    is: 'grid-schema',
+    properties: {
+      area: {
+        type: Object,
+        value: []
+      },
+      incomingColor: {
+        type: 'String',
+        value: '#777'
+      },
+      outgoingColor: {
+        type: 'String',
+        value: '#777'
+      },
+      sensors: {
+        type: Array,
+        value: ["Power system 8x260W", "Power system 8x295W", "Power system 12x260","Power system 12x295"]
+      },
+      lines: {
+        type: Object,
+        value: {
+          incoming: [
+            {
+              name: 'CET Sud',
+              measurments: [
+                {
+                  unit: 'MR',
+                  value: 10.0,
+                  type: 'IN'
+                },
+                {
+                  unit: 'MWAr',
+                  value: 10.0,
+                  type: 'IN'
+                }
+              ]
+            },
+            {
+              name: 'CET Vest',
+              measurments: [
+                {
+                  unit: 'MR',
+                  value: 10.0,
+                  type: 'IN'
+                },
+                {
+                  unit: 'kV',
+                  value: 10.0,
+                  type: 'IN'
+                }
+              ]
+            }
+          ],
+          outgoing: [
+            {
+              name: 'OUT 1',
+              measurments: [
+                {
+                  unit: 'MW',
+                  type: 'OUT',
+                  value: 0.5
+                },
+                {
+                  unit: 'MR',
+                  type: 'IN',
+                  value: 0.3
+                }
+              ]
+            },
+            {
+              name: 'OUT 2',
+              measurments: [
+                {
+                  unit: 'MW',
+                  type: 'OUT',
+                  value: 0.5
+                },
+                {
+                  unit: 'MR',
+                  type: 'IN',
+                  value: 0.3
+                }
+              ]
+            },
+            {
+              name: 'OUT 3',
+              measurments: [
+                {
+                  unit: 'MW',
+                  type: 'OUT',
+                  value: 0.5
+                },
+                {
+                  unit: 'MR',
+                  type: 'IN',
+                  value: 0.3
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    ready: function () {
+
+      document.addEventListener('area-selected', function (e) {
+        this.area = e.detail;
+      }.bind(this))
+    },
+    _openLineDetails: function (e, detail, target) {
+      if (e.target.getAttribute('type') == 'button') {
+        return;
+      }
+
+      var modal = Polymer.dom(e.currentTarget).querySelector('px-modal');
+      modal.modalButtonClicked();
+    }
+  })
+</script>

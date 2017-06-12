@@ -1,0 +1,156 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html"/>
+<link rel="import" href="../../bower_components/px-inbox/css/px-inbox-styles.html">
+<link rel="import" href="../../bower_components/px-demo/css/px-demo-styles.html"/>
+
+<!-- -->
+
+<dom-module id="inbox-detail">
+  <template>
+    <style include="px-inbox-styles"></style>
+    <style include="px-demo-styles"></style>
+    <template is="dom-if" if="{{isSelected}}" id="selection">
+      <div class="header flex flex--left">
+        <div id="icon" class$="{{severity}} u-mr-">
+          <div class="svg-canvas">
+            <svg xmlns="http://www.w3.org/2000/svg" version="1.1" class="svg-triangle">
+              <polygon points="0,27 15,0 30,27"/>
+            </svg>
+          </div>
+          <span class="number"></span>
+        </div>
+        <span class="epsilon" style="line-height:30px;">{{title}}</span>
+      </div>
+      <div class="details">
+        <span class="caps title">Alert Information</span>
+
+        <div class="flex u-mt">
+          <div class="flex__item">
+            <span class="label">Alert ID</span><br/>
+            <span>{{alertId}}</span>
+          </div>
+          <div class="flex__item">
+            <span class="label">Alert Source</span><br/>
+            <span>{{alertSource}}</span>
+          </div>
+        </div>
+        <div class="flex u-mt">
+          <div class="flex__item">
+            <span class="label">Received Date/Time</span><br/>
+            <span>{{receivedDateTime}}</span>
+          </div>
+          <div class="flex__item">
+            <span class="label">State</span><br/>
+            <span>{{state}}</span>
+          </div>
+        </div>
+      </div>
+      <div class="details">
+        <span class="caps title">Asset Information</span>
+
+        <div class="flex u-mt">
+          <div class="flex__item">
+            <span class="label">Customer</span><br/>
+            <span>{{customer}}</span>
+          </div>
+          <div class="flex__item">
+            <span class="label">Serial Number</span><br/>
+            <span>{{serialNumber}}</span>
+          </div>
+        </div>
+        <div class="flex u-mt">
+          <div class="flex__item">
+            <span class="label">DLN Type</span><br/>
+            <span>{{dlnType}}</span>
+          </div>
+          <div class="flex__item">
+            <span class="label">Model</span><br/>
+            <span>{{model}}</span>
+          </div>
+        </div>
+        <div class="flex--row flex flex--right u-mh+ u-mv+ ">
+          <button class="btn" on-click="_setInProgress"> Mark as In Progress</button>
+          <button class="btn" on-click="_setClosed"> Close</button>
+        </div>
+
+        <iron-ajax id="alarmsUpdateQuery" url="/pm-api/alarms/update" method="put" content-type="application/json" on-response="_onUpdate"></iron-ajax>
+
+      </div>
+    </template>
+  </template>
+</dom-module>
+
+<script>
+  Polymer({
+
+    is: 'inbox-detail',
+
+    properties: {
+
+      /*
+       * This property checks whether the user has selected an inbox item
+       *
+       * @property isSelected
+       * @type Boolean
+       */
+      isSelected: {
+        type: Boolean,
+        value: false
+      },
+
+      /*
+       * The following properties provide hooks through which we can display detailed information about the selected inbox item
+       */
+      title: {
+        type: String
+      },
+      severity: {
+        type: String
+      },
+      alertId: {
+        type: String
+      },
+      alertSource: {
+        type: String
+      },
+      receivedDateTime: {
+        type: String
+      },
+      state: {
+        type: String
+      },
+      customer: {
+        type: String
+      },
+      serialNumber: {
+        type: String
+      },
+      dlnType: {
+        type: String
+      },
+      model: {
+        type: String
+      },
+      alarm: {
+        type: Object
+      }
+    },
+
+    _setInProgress: function () {
+      this.alarm.alarmState = 'PROGRESS';
+      this.state = 'PROGRESS';
+      Polymer.dom(this.root).querySelector('#alarmsUpdateQuery').body = this.alarm;
+      Polymer.dom(this.root).querySelector('#alarmsUpdateQuery').generateRequest();
+    },
+
+    _setClosed: function () {
+      this.alarm.alarmState = 'CLOSE';
+      this.state = 'CLOSE';
+      Polymer.dom(this.root).querySelector('#alarmsUpdateQuery').body = this.alarm;
+      Polymer.dom(this.root).querySelector('#alarmsUpdateQuery').generateRequest();
+    },
+
+    _onUpdate: function (data) {
+      this.fire('alarm-change-state');
+    }
+  });
+</script>

@@ -1,0 +1,186 @@
+<!-- import polymer -->
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-selector/iron-selector.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+
+
+<!-- import page level css -->
+<link rel="import" href="operator-dashboard-view-styles.html">
+<link rel="import" href="../bower_components/google-map/google-map.html">
+<link rel="import" href="../bower_components/google-map/google-map-poly.html">
+<link rel="import" href="../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../bower_components/px-map/px-map.html">
+<link rel="import" href="../bower_components/px-map/px-map-tile-layer.html"/>
+<link rel="import" href="../bower_components/px-map/px-map-control-zoom.html"/>
+<link rel="import" href="../bower_components/px-map/px-map-marker-static.html"/>
+<link rel="import" href="../bower_components/px-map/px-map-popup-info.html"/>
+<link rel="import" href="../bower_components/px-map/px-map-layer-geojson.html"/>
+
+<script src="../bower_components/proj4/dist/proj4.js"></script>
+
+
+<dom-module id="operator-dashboard-view">
+  <template>
+    <style include="operator-dashboard-view-styles"></style>
+
+    <px-view-header title="Operator dashboard"></px-view-header>
+
+
+    <div class="layout u-mt--" style="height: 85vh;">
+      <div class="layout__item u-1/2">
+
+        <google-map latitude="52.02466805991197" longitude="4.680976099320156" min-zoom="12" max-zoom="18" api-key="AIzaSyB-uDb0wvtXzNncAWGsDrU2m_y-B01y5FA">
+
+
+          <template is="dom-repeat" items="{{_substations}}" as="substation">
+            <google-map-poly stroke-weight="2"
+                             fill-color="#ADFF2F"
+                             fill-opacity=".5"
+                             mouse-events
+                             clickable
+                             click-events
+                             closed
+                             on-google-map-poly-click="_substationClicked"
+                             on-google-map-poly-mouseover="mouserOver"
+                             on-google-map-poly-mouseout="mouseOut">
+              <template is="dom-repeat" items="{{substation.symbolPlacement.coords}}" as="point">
+                <google-map-point latitude="[[point.lat]]" longitude="[[point.lng]]"></google-map-point>
+              </template>
+            </google-map-poly>
+          </template>
+
+
+          <template is="dom-repeat" items="{{_lines}}" as="line">
+            <google-map-poly stroke-weight="2"
+                             mouse-events
+                             clickable
+                             click-events
+                             on-google-map-poly-click="_lineClicked"
+                             on-google-map-poly-mouseover="mouserOver"
+                             on-google-map-poly-mouseout="mouseOut">
+              <template is="dom-repeat" items="{{line.LinePlacement.coords}}" as="point">
+                <google-map-point latitude="[[point.lat]]" longitude="[[point.lng]]"></google-map-point>
+              </template>
+            </google-map-poly>
+          </template>
+
+        </google-map>
+
+      </div>
+
+
+      <div class="layout__item u-1/2 u-ml-- content">
+
+        <div hidden$="{{!_selectedLine}}">
+          <h2 class="epsilon">Selected Line </h2>
+          <ul class="list-ui u-pb++">
+            <li class="list-ui__item"><b>Id</b> {{_selectedLine.properties.Id}}</li>
+            <li class="list-ui__item"><b>Name</b> {{_selectedLine.properties.Name}}</li>
+            <li class="list-ui__item"><b>Station</b> {{_selectedLine.properties.Station}}</li>
+            <li class="list-ui__item"><b>Device Type</b> {{_selectedLine.properties.DeviceType}}</li>
+          </ul>
+        </div>
+
+      </div>
+
+      <iron-ajax auto url="/px-api/predix-asset/substation" on-response="_initSubstations"></iron-ajax>
+      <iron-ajax auto url="/px-api/predix-asset/line"
+                 params='{"filter":"LinePlacement.GeometryType=DETAIL","pageSize":"1000"}'
+                 on-response="_initLines"></iron-ajax>
+
+
+    </div>
+
+
+  </template>
+  <script>
+
+    Polymer({
+      is: 'operator-dashboard-view',
+
+      properties: {
+        _line: {
+          type: Array,
+          value: []
+        },
+        _projections: {
+          type: Object,
+          value: {
+
+            src: '+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel' +
+            ' +towgs84=565.4171,50.3319,465.5524,-0.398957,0.343988,-1.87740,4.0725 +units=m +no_defs',
+
+            dest: proj4.Proj('WGS84'),
+
+
+            vertex: function (arr) {
+
+              var result = [];
+              var _this = this;
+
+              arr.Vertex.forEach(function (item) {
+
+                var ret = proj4(_this.src, _this.dest, [item.X,item.Y]);
+                if (!ret || ret.length == 0) {
+                  return;
+                }
+                result.push([ret[1], ret[0]]);
+              });
+
+              return result;
+            }
+          }
+        }
+      },
+      observers: [],
+
+
+      _initSubstations: function (data) {
+        var _this = this;
+
+        data.detail.response.forEach(function (item, idx) {
+          var geom = item.symbolPlacement;
+          geom.coords = [];
+          var wgsCoords = _this._projections.vertex(geom);
+          wgsCoords.forEach(function (coord) {
+            geom.coords.push({lat: coord[0], lng: coord[1]});
+          });
+        });
+
+        this.set('_substations', data.detail.response);
+      },
+
+      _initLines: function (data) {
+        var _this = this;
+
+        data.detail.response.forEach(function (item, idx) {
+          var geom = item.LinePlacement;
+          geom.coords = [];
+          var wgsCoords = _this._projections.vertex(geom);
+          wgsCoords.forEach(function (coord) {
+            geom.coords.push({lat: coord[0], lng: coord[1]});
+          });
+        });
+
+        this.set('_lines', data.detail.response);
+      },
+
+      _markerClicked: function (e) {
+        var item = e.model._config.point;
+        this.set('_selectedMarker', item);
+      },
+      mouserOver: function (e) {
+        document.body.style.cursor = "pointer";
+        var target = e.target;
+        target.strokeOpacity = .5;
+      },
+
+      mouseOut: function (e) {
+        var target = e.target;
+        if (!target.selected)
+          target.strokeOpacity = 1;
+      }
+
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,17 @@
+{
+  "services": {
+    "service-name-1": {
+      "uri": "{TODO}"
+    }
+  },
+  "base64ClientCredential": "Y2xpZW50OnNlY3JldA==",
+  "clientId": "client",
+  "appUrl": "http://localhost:5000"
+}
+
+
+
+
+
+
+
