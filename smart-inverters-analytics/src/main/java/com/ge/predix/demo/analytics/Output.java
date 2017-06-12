@@ -19,17 +19,17 @@ import java.util.Map;
  */
 public class Output 
 {
-	Map<Long, Double> PVConsumptionSmart; 
-	Map<Long, Double> PVConsumptionDumb; 
-	Map<Long, Double> networkConsumptionSmart;
-	Map<Long, Double> networkConsumptionDumb;
-	Map<Long, Double> pricePerHourSmart;
-	Map<Long, Double> pricePerHourDumb;
-	Double fullNetworkPrice ; 
-	Double priceWithPVSmart;
-	Double priceWithPVDumb;
-	Double batteryLevelSmart ;
-	Double batteryLevelDumb;
+	public Map<Long, Double> PVConsumptionSmart; 
+	public Map<Long, Double> PVConsumptionDumb; 
+	public Map<Long, Double> networkConsumptionSmart;
+	public 	Map<Long, Double> networkConsumptionDumb;
+	public 	Map<Long, Double> pricePerHourSmart;
+	public 	Map<Long, Double> pricePerHourDumb;
+	public 	Double fullNetworkPrice ; 
+	public 	Double priceWithPVSmart;
+	public 	Double priceWithPVDumb;
+	public 	Double batteryLevelSmart ;
+	public 	Double batteryLevelDumb;
 	
 	public Output()
 	{
