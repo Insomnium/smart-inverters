@@ -1,0 +1,8 @@
+.classpath
+.settings
+.project
+target
+.idea/
+node_modules/
+bower_components/
+*.iml
