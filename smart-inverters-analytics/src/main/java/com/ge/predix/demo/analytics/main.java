@@ -115,10 +115,11 @@ public class main {
 		jsonInput=mapper.writeValueAsString(input);
 		
 		System.out.println(jsonInput);
-		
-		new OptimalRoiForSolarSystem().calculate(jsonInput);
-	
-       
+
+		String output = new OptimalRoiForSolarSystem().calculate(jsonInput);
+		System.out.println(output);
+
+
 	}
 
 }

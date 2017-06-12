@@ -1,7 +1,7 @@
 {
   "services": {
-    "service-name-1": {
-      "uri": "{TODO}"
+    "analytics": {
+      "uri": "http://localhost:9092/"
     }
   },
   "base64ClientCredential": "Y2xpZW50OnNlY3JldA==",

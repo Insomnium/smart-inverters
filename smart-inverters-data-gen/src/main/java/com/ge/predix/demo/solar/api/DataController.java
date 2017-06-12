@@ -1,6 +1,7 @@
 package com.ge.predix.demo.solar.api;
 
 import com.ge.predix.demo.solar.service.AssetDataService;
+import com.ge.predix.demo.solar.service.OptimalRoiForSolarSystem;
 import com.ge.predix.demo.solar.service.TimeseriesDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
@@ -69,6 +70,11 @@ public class DataController {
     @RequestMapping(value = "/assets/delete", method = RequestMethod.DELETE)
     public String deleteAsset(@RequestParam String assetUri) throws IOException {
         return assetDataService.deleteAsset(assetUri);
+    }
+
+    @RequestMapping(value = "/calculate", method = RequestMethod.POST)
+    public String calculate(@RequestBody String body) throws IOException {
+        return new OptimalRoiForSolarSystem().calculate(body);
     }
 
 }
