@@ -77,4 +77,9 @@ public class DataController {
         return new OptimalRoiForSolarSystem().calculate(body);
     }
 
+    @RequestMapping(value = "/calculate-smart", method = RequestMethod.POST)
+    public String calculateSmart(@RequestBody String body) throws IOException {
+        return new OptimalRoiForSolarSystem().calculateSmart(body);
+    }
+
 }

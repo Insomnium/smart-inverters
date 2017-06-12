@@ -13,7 +13,7 @@ logging:
 predix:
     timeseries:
         queryUrl: https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints
-        zoneid: 8046ff11-9879-46a9-bea5-32e22caae269
+        zoneid: 7709a5e1-7a18-45dc-ae32-e1e549a6802e
         websocket:
             uri: wss://gateway-predix-data-services.run.aws-usw02-pr.ice.predix.io/v1/stream/messages
             pool:
