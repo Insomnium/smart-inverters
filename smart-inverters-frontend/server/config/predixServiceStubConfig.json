@@ -42,6 +42,27 @@
         "volume_mounts": []
       }
     ],
+    "predix-timeseries-proxy": [
+      {
+        "credentials": {
+          "query": {
+            "uri": "https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints",
+            "zone-http-header-name": "Predix-Zone-Id",
+            "zone-http-header-value": "8046ff11-9879-46a9-bea5-32e22caae269",
+            "zone-token-scopes": [
+              "predix-asset.zones.607dad95-6743-40b3-a5fe-7188bbc8223d.user"
+            ]
+          }
+        },
+        "label": "predix-timeseries-proxy",
+        "name": "predix-timeseries-proxy",
+        "plan": "Free",
+        "provider": null,
+        "syslog_drain_url": null,
+        "tags": [],
+        "volume_mounts": []
+      }
+    ],
     "user-provided": [
       {
         "credentials": {

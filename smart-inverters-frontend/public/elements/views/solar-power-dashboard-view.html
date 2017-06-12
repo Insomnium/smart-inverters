@@ -209,7 +209,7 @@
     <iron-ajax auto url="/predix-api/predix-asset/power-line" last-response={{_paths}}></iron-ajax>
     <iron-ajax auto url="/predix-api/predix-asset/consumer" last-response={{_consumers}} on-response="_initConnections"></iron-ajax>
     <iron-ajax auto url="/predix-api/predix-asset/solar-power-system" last-response={{_solarSystems}} on-response="_initPanels"></iron-ajax>
-    <iron-ajax id="datapointRequest" url="/predix-api/predix-timeseries/v1/datapoints"
+    <iron-ajax id="datapointRequest" url="/predix-api/predix-timeseries-proxy/v1/datapoints"
                method="post"
                content-type="application/json"
                on-response="_initChartData"></iron-ajax>
@@ -227,7 +227,7 @@
     is: 'solar-power-dashboard-view',
     ready: function () {
       var periods = [];
-      var date = new Date(2016, 11, 5);
+      var date = new Date(2016, 5, 11);
       for (var i = 0; i < 3; i++) {
 
         periods.push({
