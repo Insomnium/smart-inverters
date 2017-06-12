@@ -1,13 +1,13 @@
 applications:
-  - name: solar-demo-service
+  - name: smart-inverters-data-service
     buildpack: java_buildpack
-    path: target/demo-service-1.0.0.jar
+    path: target/smart-inverters-data-service-1.0.0.jar
     memory: 500M
     timeout: 180
     services:
-        - demo-uaa
-        - demo-predix-timeseries
-        - demo-predix-asset
+        - MMEurope-uaa
+        - smart-inverter-timeseries
+        - MMEurope-asset
 
 env:
     SPRING_PROFILES_ACTIVE: cloud
