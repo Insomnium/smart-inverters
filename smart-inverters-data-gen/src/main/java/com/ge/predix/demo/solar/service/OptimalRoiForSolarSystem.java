@@ -6,6 +6,7 @@ import com.ge.predix.demo.solar.model.*;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Created by 212525538 on 4/5/2017.
@@ -29,7 +30,7 @@ public class OptimalRoiForSolarSystem {
         Map<String, Number> _price = (Map<String, Number>) map.get("price");
         Price price = new Price(_price);
 
-        Map<Long, Double> c = new HashMap<Long, Double>();
+        Map<Long, Double> result = new TreeMap<>();
         double minPrice = 9999999.999;
         double maxPrice = 0.0;
         double avgPrice =0.0;
@@ -73,21 +74,21 @@ public class OptimalRoiForSolarSystem {
 
             //first check if battery capacity will be reached
             //if so fill battery and consume excess;
-            c.put(hour, 0.0);
+            result.put(hour, 0.0);
             if (batteryCapacity.doubleValue() < batteryEnergy+generatedPwr)
             {
 
-                c.put(hour, Math.min((batteryEnergy+generatedPwr-batteryCapacity.doubleValue()),needRemained));
+                result.put(hour, Math.min((batteryEnergy+generatedPwr-batteryCapacity.doubleValue()),needRemained));
 
 
-                generatedPwr= Math.max(0, generatedPwr-c.get(hour)) ; // adjust remaining power
+                generatedPwr= Math.max(0, generatedPwr-result.get(hour)) ; // adjust remaining power
 
                 batteryEnergy=batteryCapacity.doubleValue();
                 batteryFull=true;
-                if (c.get(hour)==pwrDemand)
+                if (result.get(hour)==pwrDemand)
                     satisfiedDay=true ;
                 else
-                    needRemained=pwrDemand-c.get(hour);
+                    needRemained=pwrDemand-result.get(hour);
             }
 
             if (!satisfiedDay)
@@ -95,23 +96,23 @@ public class OptimalRoiForSolarSystem {
                 if (!batteryFull && hourNetworkPrice<avgPrice)//(minPrice+avgPrice)/2)
                 {
                     batteryEnergy += generatedPwr;
-                    c.put(hour, 0.0);
+                    result.put(hour, 0.0);
                 }
                 else if (batteryEnergy + generatedPwr >= needRemained)
                 {
-                    c.put(hour, c.get(hour)+needRemained);
+                    result.put(hour, result.get(hour)+needRemained);
                     batteryEnergy = Math.min(batteryEnergy + generatedPwr - needRemained,batteryCapacity.doubleValue());
                 }
                 else
                 {
                     batteryEnergy = Math.min(batteryEnergy+generatedPwr,batteryCapacity.doubleValue());
-                    c.put(hour, c.get(hour)+batteryEnergy);
+                    result.put(hour, result.get(hour)+batteryEnergy);
                     batteryEnergy=0;
                 }
             }
 
 
-            optimizedNetworkPrice+= (pwrDemand-c.get(hour))*hourNetworkPrice;
+            optimizedNetworkPrice+= (pwrDemand-result.get(hour))*hourNetworkPrice;
 
             batteryEnergy = Math.min(batteryEnergy, batteryCapacity.doubleValue());
 
@@ -124,7 +125,7 @@ public class OptimalRoiForSolarSystem {
         System.out.println("end of day bat lvl = "+batteryEnergy);
         System.out.println("full network price = "+fullNetworkPrice +" vs if optimized price ="+optimizedNetworkPrice);
 
-        return mapper.writeValueAsString(c);
+        return mapper.writeValueAsString(result);
     }
 
 
