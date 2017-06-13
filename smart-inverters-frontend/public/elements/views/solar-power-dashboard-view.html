@@ -210,14 +210,17 @@
           series: {
             'Generated Power': {
               color: 'green'
-              , strokePattern: [10, 10]
+//              ,strokePattern: [10, 10]
             },
             'Used Power': {
               color: 'red'
-              , strokePattern: [0, 10, 10, 0]
+              ,strokePattern: [0, 10, 10, 0]
             }
           },
           labels: ['Date', "Generated Power", "Used Power"],
+          labelsSeparateLines: true,
+          stepPlot:true,
+          fillGraph:true,
           showRangeSelector: true
         }
       },
