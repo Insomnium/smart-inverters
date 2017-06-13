@@ -116,8 +116,8 @@
                   <dy-graphs id="savedPowerChartSmart" data="[[_savedPowerDataSmart]]" options="[[_dygraphOptions2]]"></dy-graphs>
 
 
-                  <h4 class="epsilon u-mt+" style="margin-bottom: 5px">Amount saved in [[_selectedMonth.val]]: <b>[[_savedAmountPerMonthSmart]]$</b></h4 >
-                  <h4 class="epsilon " style="margin-top: 0">Amortization time: <b>[[_timeOfAmortizationSmart]] months</b></h4 >
+                  <h4 class="epsilon u-mt+" style="margin-bottom: 5px">Amount saved in [[_selectedMonth.val]]: <b>[[_savedAmountPerMonthSmart]]$</b></h4>
+                  <h4 class="epsilon " style="margin-top: 0">Amortization time: <b>[[_timeOfAmortizationSmart]] months</b></h4>
                 </div>
 
                 <paper-progress indeterminate class="slow red u-mt++" hidden$="[[_calcRoiSpinner]]"></paper-progress>
@@ -216,13 +216,13 @@
             },
             'Used Power': {
               color: 'red'
-              ,strokePattern: [0, 10, 10, 0]
+              , strokePattern: [0, 10, 10, 0]
             }
           },
           labels: ['Date', "Generated Power", "Used Power"],
           labelsSeparateLines: true,
-          stepPlot:true,
-          fillGraph:true,
+          stepPlot: true,
+          fillGraph: true,
           showRangeSelector: true
         }
       },
@@ -474,39 +474,39 @@
       };
 
       var pricePerHrWeekEnd = {
-          0: 26.3,
-          1: 24.23,
-          2: 24.25,
-          3: 24.25,
-          4: 23.36,
-          5: 22.74,
-          6: 25.67,
-          7: 25.71,
-          8: 25.31,
-          9: 31.02,
-          10: 36.9,
-          11: 44.25,
-          12: 44.29,
-          13: 43.5,
-          14: 43.34,
-          15: 40.22,
-          16: 41.11,
-          17: 44.14,
-          18: 49.2,
-          19: 49.32,
-          20: 50.76,
-          21: 55.64,
-          22: 54.94,
-          23: 37.55
-        };
+        0: 26.3,
+        1: 24.23,
+        2: 24.25,
+        3: 24.25,
+        4: 23.36,
+        5: 22.74,
+        6: 25.67,
+        7: 25.71,
+        8: 25.31,
+        9: 31.02,
+        10: 36.9,
+        11: 44.25,
+        12: 44.29,
+        13: 43.5,
+        14: 43.34,
+        15: 40.22,
+        16: 41.11,
+        17: 44.14,
+        18: 49.2,
+        19: 49.32,
+        20: 50.76,
+        21: 55.64,
+        22: 54.94,
+        23: 37.55
+      };
 
       var hour = time.getHours();
       var day = time.getDay();
       var isWeekend = (day == 6) || (day == 0);
       if (isWeekend) {
-        return pricePerHrWeekEnd[hour] /100;
+        return pricePerHrWeekEnd[hour] / 100;
       } else {
-        return pricePerHrWeek[hour] /100;
+        return pricePerHrWeek[hour] / 100;
       }
     },
 
@@ -569,15 +569,17 @@
         pricePerHr[datapoint[0].toString()] = _this._pricePerKWPerHour(new Date(datapoint[0]));
       });
       var request = {price: pricePerHr, powerDemand: powerDemand, batteryCapacity: batteryCapacity, generatedPower: generatedPower};
+      var _this = this;
+      _this.$.analyticRequest.set('body', JSON.stringify(request));
+      _this.$.analyticRequest.set('method', 'POST');
+      _this.$.analyticRequest.generateRequest();
 
-      this.$.analyticRequest.set('body',JSON.stringify(request) );
-      this.$.analyticRequest.set('method' ,'POST');
-      this.$.analyticRequest.generateRequest();
 
-
-      this.$.analyticRequestSmart.set('body',JSON.stringify(request));
-      this.$.analyticRequestSmart.set('method' ,'POST');
-      this.$.analyticRequestSmart.generateRequest();
+      setTimeout(function () {
+        _this.$.analyticRequestSmart.set('body', JSON.stringify(request));
+        _this.$.analyticRequestSmart.set('method', 'POST');
+        _this.$.analyticRequestSmart.generateRequest();
+      }, 500);
     },
 
     _redrawChartSimple: function (data) {
@@ -646,7 +648,7 @@
       this.$.calcRoi.removeAttribute('disabled');
       this.set('_calculateActionText', 'Calculate Return of investment for consumer');
 
-      return {savedAmount: savedMonthlyAmount , powerData: newPowerData, timeOfAmortization: timeOfAmortization};
+      return {savedAmount: savedMonthlyAmount, powerData: newPowerData, timeOfAmortization: timeOfAmortization};
     }
 
   });
