@@ -108,14 +108,16 @@
 
                   <dy-graphs id="savedPowerChart" data="[[_savedPowerData]]" options="[[_dygraphOptions2]]"></dy-graphs>
 
+                  <h3 class="epsilon u-mt++">Amount saved in [[_selectedMonth.val]]: <b>[[_savedAmountPerMonth]]$</b></h3>
+                  <h3 class="epsilon u-mt++">Amortization time: <b>[[_timeOfAmortization]] months</b></h3>
+
 
                   <h2 class="delta u-mt++">Power consumed with <b>smart</b> inverters </h2>
-
                   <dy-graphs id="savedPowerChartSmart" data="[[_savedPowerDataSmart]]" options="[[_dygraphOptions2]]"></dy-graphs>
 
-                  <h3 class="epsilon u-mt++">Amount saved in [[_selectedMonth.val]]: <b>[[_savedAmountPerMonth]]$</b></h3>
 
-                  <h3 class="epsilon u-mt++">Amortization time: <b>[[_timeOfAmortization]] months</b></h3>
+                  <h3 class="epsilon u-mt++">Amount saved in [[_selectedMonth.val]]: <b>[[_savedAmountPerMonthSmart]]$</b></h3>
+                  <h3 class="epsilon u-mt++">Amortization time: <b>[[_timeOfAmortizationSmart]] months</b></h3>
                 </div>
 
                 <paper-progress indeterminate class="slow red u-mt++" hidden$="[[_calcRoiSpinner]]"></paper-progress>
@@ -519,8 +521,13 @@
 
     _redrawChartSimple: function (data) {
 
-      var newPowerData = this._redrawChart(data);
-      this.set('_savedPowerData', newPowerData);
+      var newData = this._redrawChart(data);
+
+      var newPowerData = newData.powerData;
+      this.set('_savedPowerData', newData.powerData);
+      this.set("_savedAmountPerMonth", newData.savedAmount);
+      this.set("_timeOfAmortization", newData.timeOfAmortization);
+
       var firstValue = newPowerData[0][0];
       var start = new Date(firstValue);
       var end = new Date(firstValue);
@@ -533,9 +540,12 @@
 
 
     _redrawChartSmart: function (data) {
-
-      var newPowerData = this._redrawChart(data);
+      var newData = this._redrawChart(data);
+      var newPowerData = newData.powerData;
       this.set('_savedPowerDataSmart', newPowerData);
+
+      this.set("_savedAmountPerMonthSmart", newData.savedAmount);
+      this.set("_timeOfAmortizationSmart", newData.timeOfAmortization);
 
       var firstValue = newPowerData[0][0];
       var start = new Date(firstValue);
@@ -567,15 +577,15 @@
         i++;
       }
 
-      this.set("_savedAmountPerMonth", numeral(_savedAmountPerMonth).format("0.00"));
-      this.set("_timeOfAmortization", numeral(this._selectedPanel.price / _savedAmountPerMonth).format("0"));
+      var savedMonthlyAmount = numeral(_savedAmountPerMonth).format("0.00");
+      var timeOfAmortization = numeral(this._selectedPanel.price / _savedAmountPerMonth).format("0");
 
       this.set('_calcRoiSpinner', true);
       this.set('_savedPowerDataNotAvailable', false);
       this.$.calcRoi.removeAttribute('disabled');
       this.set('_calculateActionText', 'Calculate Return of investment for consumer');
 
-      return newPowerData;
+      return {savedAmount: savedMonthlyAmount , powerData: newPowerData, timeOfAmortization: timeOfAmortization};
     }
 
   });
