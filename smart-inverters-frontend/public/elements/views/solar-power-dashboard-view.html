@@ -139,13 +139,13 @@
                on-response="_initChartData"></iron-ajax>
     <iron-ajax id="geocode" url="https://maps.googleapis.com/maps/api/geocode/json" on-response="_initConsumerAddress"></iron-ajax>
     <iron-ajax id="analyticRequestSmart"
-               method="post"
+               method="POST"
                content-type="application/json"
                url="/predix-api/analytics/api/calculate-smart"
                on-response="_redrawChartSmart"></iron-ajax>
 
     <iron-ajax id="analyticRequest"
-               method="post"
+               method="POST"
                content-type="application/json"
                url="/predix-api/analytics/api/calculate"
                on-response="_redrawChartSimple"></iron-ajax>
@@ -445,11 +445,69 @@
     },
 
     _pricePerKWPerHour: function (time) {
+
+      var pricePerHrWeek = {
+        "0": 20.68,
+        "1": 19.9,
+        "2": 18.45,
+        "3": 17.85,
+        "4": 17.2,
+        "5": 17.31,
+        "6": 21.66,
+        "7": 30.57,
+        "8": 37.32,
+        "9": 41.91,
+        "10": 44.45,
+        "11": 47.28,
+        "12": 48.11,
+        "13": 47.62,
+        "14": 47.86,
+        "15": 45.97,
+        "16": 46.38,
+        "17": 46,
+        "18": 46.59,
+        "19": 45.23,
+        "20": 46.42,
+        "21": 48.53,
+        "22": 46.43,
+        "23": 38.29
+      };
+
+      var pricePerHrWeekEnd = {
+          0: 26.3,
+          1: 24.23,
+          2: 24.25,
+          3: 24.25,
+          4: 23.36,
+          5: 22.74,
+          6: 25.67,
+          7: 25.71,
+          8: 25.31,
+          9: 31.02,
+          10: 36.9,
+          11: 44.25,
+          12: 44.29,
+          13: 43.5,
+          14: 43.34,
+          15: 40.22,
+          16: 41.11,
+          17: 44.14,
+          18: 49.2,
+          19: 49.32,
+          20: 50.76,
+          21: 55.64,
+          22: 54.94,
+          23: 37.55
+        };
+
       var hour = time.getHours();
-      if (hour > 21 || hour < 7)
-        return 4.22;
-      else
-        return 1.36;
+      var day = time.getDay();
+      var isWeekend = (day == 6) || (day == 0);
+      if (isWeekend) {
+        return pricePerHrWeekEnd[hour] /100;
+      } else {
+        return pricePerHrWeek[hour] /100;
+      }
     },
 
     _panelChanged: function (e) {
@@ -512,12 +570,13 @@
       });
       var request = {price: pricePerHr, powerDemand: powerDemand, batteryCapacity: batteryCapacity, generatedPower: generatedPower};
 
-      this.$.analyticRequest.body = request;
-      this.$.analyticRequest.method = "POST";
+      this.$.analyticRequest.set('body',JSON.stringify(request) );
+      this.$.analyticRequest.set('method' ,'POST');
       this.$.analyticRequest.generateRequest();
 
-      this.$.analyticRequestSmart.body = request;
-      this.$.analyticRequestSmart.method = "POST";
+
+      this.$.analyticRequestSmart.set('body',JSON.stringify(request));
+      this.$.analyticRequestSmart.set('method' ,'POST');
       this.$.analyticRequestSmart.generateRequest();
     },
 
