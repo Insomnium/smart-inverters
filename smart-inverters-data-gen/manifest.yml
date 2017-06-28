@@ -5,9 +5,9 @@ applications:
     memory: 500M
     timeout: 180
     services:
-        - MMEurope-uaa
-        - smart-inverter-timeseries
-        - MMEurope-asset
+        - smart-inverters-uaa
+        - smart-inverters-timeseries
+        - smart-inverters-asset
 
 env:
     SPRING_PROFILES_ACTIVE: cloud

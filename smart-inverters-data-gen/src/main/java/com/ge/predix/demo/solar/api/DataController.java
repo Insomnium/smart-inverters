@@ -31,7 +31,6 @@ public class DataController {
 
     @RequestMapping(value = "/tags/data", method = RequestMethod.GET)
     public ResponseEntity<Object> getSensorDataByLabel(@RequestParam String label, @RequestParam Long start, @RequestParam Long end) throws Exception {
-        //return timeseriesDataService.getSensorDataPointsByLabel(label, LocalDateTime.now().minusMonths(6).toInstant(ZoneOffset.UTC).toEpochMilli(), LocalDateTime.now().toInstant(ZoneOffset.UTC).toEpochMilli());
         return timeseriesDataService.getSensorDataPointsByLabel(label, start, end);
     }
 

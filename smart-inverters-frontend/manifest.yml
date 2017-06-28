@@ -15,10 +15,9 @@ applications:
     command: node server/app.js
 
 services:
- - MMEurope_uaa_admin
- - MMEurope_timeseries_heatPump
- - MMEurope_timeseries_loadData
- - MMEurope-uaa
+ - smart-inverters-uaa
+ - smart-inverters-timeseries
+ - smart-inverters-asset
 
 env:
     node_env: cloud

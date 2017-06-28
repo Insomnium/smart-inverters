@@ -13,7 +13,7 @@ logging:
 predix:
     timeseries:
         queryUrl: https://time-series-store-predix.run.aws-usw02-pr.ice.predix.io/v1/datapoints
-        zoneid: 7709a5e1-7a18-45dc-ae32-e1e549a6802e
+        zoneid: ed7b290c-bab9-4206-bc5f-ba78ae0dc416
         websocket:
             uri: wss://gateway-predix-data-services.run.aws-usw02-pr.ice.predix.io/v1/stream/messages
             pool:
@@ -22,11 +22,11 @@ predix:
                 maxWait: 8000
     oauth:
         issuerId:
-            url: https://01ea0bc3-68f4-4626-849f-d4c70c6620a5.predix-uaa.run.aws-usw02-pr.ice.predix.io/oauth/token
+            url: https://756661d6-dba3-4132-a94d-6445429812ca.predix-uaa.run.aws-usw02-pr.ice.predix.io/oauth/token
         clientIdEncode: true
         clientId: client:secret
     asset:
-        zoneid: 607dad95-6743-40b3-a5fe-7188bbc8223d
+        zoneid: d179568f-417b-4308-bdf3-e9a8e9caf9fc
         restHost: predix-asset.run.aws-usw02-pr.ice.predix.io
         assetSocketTimeout: 40000
         connectionTimeout: 40000
