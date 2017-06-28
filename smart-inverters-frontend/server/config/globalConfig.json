@@ -1,12 +1,12 @@
 {
   "services": {
     "analytics": {
-      "uri": "http://localhost:9092/"
+      "uri": "https://smart-inverters-data-service.run.aws-usw02-pr.ice.predix.io/"
     }
   },
   "base64ClientCredential": "Y2xpZW50OnNlY3JldA==",
   "clientId": "client",
-  "appUrl": "http://localhost:5000"
+  "appUrl": "https://smart-inverters.run.aws-usw02-pr.ice.predix.io/"
 }
 
 
